@@ -3,15 +3,15 @@ This repository contains a simple customer service chat system implemented in Ja
 
 ## Instructions to Run
 Compile all Java files:
-'''
+```
    javac ChatServer.java ClientHandler.java AdminHandler.java ChatClient.java
-'''
+```
 Run the ChatServer:
-'''
+```
 java ChatServer
-'''
+```
 
 Now open multiple terminals and run the ChatClient in each to simulate multiple clients:
-'''
+```
 java ChatClient
-'''
+```

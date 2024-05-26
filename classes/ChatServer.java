@@ -4,7 +4,7 @@ import java.util.*;
 
 public class ChatServer {
     private static final int PORT = 12345;
-    private static Set<ClientHandler> clientHandlers = new HashSet<>();
+    public static Set<ClientHandler> clientHandlers = new HashSet<>();
     private static AdminHandler adminHandler;
 
     public static void main(String[] args) {
@@ -32,7 +32,7 @@ public class ChatServer {
 
     public static void sendMessageToAdmin(String message, ClientHandler clientHandler) {
         if (adminHandler != null) {
-            adminHandler.sendMessage(clientHandler.getClientName() + ": " + message, clientHandler);
+            adminHandler.sendMessage(clientHandler.getClientName() + ": " + message);
         }
     }
 

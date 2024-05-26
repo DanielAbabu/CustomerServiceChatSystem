@@ -3,7 +3,6 @@ import java.net.*;
 
 public class AdminHandler {
     private PrintWriter out;
-    private BufferedReader in;
     private BufferedReader stdIn;
 
     public AdminHandler() throws IOException {
@@ -25,8 +24,8 @@ public class AdminHandler {
         }
     }
 
-    public void sendMessage(String message, ClientHandler clientHandler) {
-        System.out.println("Message from " + clientHandler.getClientName() + ": " + message);
+    public void sendMessage(String message) {
+        System.out.println(message);
     }
 
     private void sendMessageToClient(String clientName, String message) {

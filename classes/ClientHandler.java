@@ -24,11 +24,6 @@ public class ClientHandler implements Runnable {
             String message;
             while ((message = in.readLine()) != null) {
                 System.out.println("Received from " + clientName + ": " + message);
-                if (message.startsWith("@admin")) {
-                    ChatServer.sendMessageToAdmin(clientName + ": " + message.substring(6), this);
-                } else {
-                    ChatServer.broadcastMessage(clientName + ": " + message, this);
-                }
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -9,40 +9,52 @@ public class ClientHandler implements Runnable {
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
+        try {
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-
-            out.println("Enter your name: ");
             clientName = in.readLine();
-            System.out.println(clientName + " connected.");
-
             String message;
             while ((message = in.readLine()) != null) {
-                System.out.println("Received from " + clientName + ": " + message);
+                ChatServer.sendMessageToAdmin(message, this);
+                broadcastMessage(clientName + ": " + message);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            ChatServer.removeClient(this);
-            System.out.println(clientName + " disconnected.");
+            closeConnection();
         }
+    }
+
+    public String getClientName() {
+        return clientName;
     }
 
     public void sendMessage(String message) {
         out.println(message);
     }
 
-    public String getClientName() {
-        return clientName;
+    private void broadcastMessage(String message) {
+        for (ClientHandler client : ChatServer.clientHandlers) {
+            if (client != this) {
+                client.sendMessage(message);
+            }
+        }
+    }
+
+    private void closeConnection() {
+        try {
+            ChatServer.removeClient(this);
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

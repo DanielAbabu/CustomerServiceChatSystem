@@ -14,7 +14,7 @@ public class ChatServer {
                 try {
                     adminHandler = new AdminHandler();
                     adminHandler.start();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).start();
@@ -33,6 +33,15 @@ public class ChatServer {
     public static void sendMessageToAdmin(String message, ClientHandler clientHandler) {
         if (adminHandler != null) {
             adminHandler.sendMessage(clientHandler.getClientName() + ": " + message);
+        }
+    }
+
+    public static void sendMessageToClient(String clientName, String message) {
+        for (ClientHandler client : clientHandlers) {
+            if (client.getClientName().equals(clientName)) {
+                client.sendMessage("Admin: " + message);
+                break;
+            }
         }
     }
 

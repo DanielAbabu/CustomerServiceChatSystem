@@ -1,38 +1,63 @@
-import java.io.*;
-import java.net.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class AdminHandler {
-    private PrintWriter out;
-    private BufferedReader stdIn;
+    private JTextField userField;
+    private JFrame frame;
+    private JTextArea messageArea;
+    private JTextField messageField;
+    private JButton sendButton;
 
-    public AdminHandler() throws IOException {
-        stdIn = new BufferedReader(new InputStreamReader(System.in));
+    public AdminHandler() {
+        frame = new JFrame("Admin Console");
+        frame.setSize(700, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        messageArea = new JTextArea(20, 40);
+        messageArea.setEditable(false);
+        messageField = new JTextField(30);
+        sendButton = new JButton("Send");
+        userField = new JTextField(15);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JScrollPane(messageArea), BorderLayout.CENTER);
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.add(messageField);
+        inputPanel.add(sendButton);
+        inputPanel.add(new JLabel("To User:"));
+        inputPanel.add(userField);
+        panel.add(inputPanel, BorderLayout.SOUTH);
+
+        frame.getContentPane().add(panel);
+        frame.setVisible(true);
+
+        sendButton.addActionListener(new SendButtonListener());
     }
 
     public void start() {
-        System.out.println("Admin started...");
-        try {
-            while (true) {
-                System.out.print("Enter client name to respond: ");
-                String clientName = stdIn.readLine();
-                System.out.print("Enter message to " + clientName + ": ");
-                String message = stdIn.readLine();
-                sendMessageToClient(clientName, message);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Admin console started...");
     }
 
     public void sendMessage(String message) {
-        System.out.println(message);
+        messageArea.append(message + "\n");
     }
 
-    private void sendMessageToClient(String clientName, String message) {
-        for (ClientHandler client : ChatServer.clientHandlers) {
-            if (client.getClientName().equals(clientName)) {
-                client.sendMessage("Admin: " + message);
-                break;
+    private class SendButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String username = userField.getText().trim();
+            String message = messageField.getText().trim();
+
+            if (!username.isEmpty() && !message.isEmpty()) {
+                ChatServer.sendMessageToClient(username, message);
+                messageArea.append("You to " + username + ": " + message + "\n");
+                messageField.setText("");
+                userField.setText("");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Enter both username and message");
             }
         }
     }

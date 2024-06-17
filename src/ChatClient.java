@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
 public class ChatClient {
     private static final String SERVER_ADDRESS = "localhost";
@@ -55,44 +55,25 @@ public class ChatClient {
         SwingUtilities.invokeLater(ChatClient::new);
     }
 
-    private void connectToServer(String username) {
-        try {
-            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            out.println(username); // Send the username to the server
-
-            Thread readThread = new Thread(() -> {
-                String serverMessage;
-                try {
-                    while ((serverMessage = in.readLine()) != null) {
-                        messageArea.append(serverMessage + "\n");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            readThread.start();
-
-            sendButton.setEnabled(true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Unable to connect to the server.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     private class ConnectButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             String username = nameField.getText().trim();
             if (!username.isEmpty()) {
-                connectToServer(username);
-                nameField.setEditable(false);
-                connectButton.setEnabled(false);
-            } else {
-                JOptionPane.showMessageDialog(frame, "Enter a username");
+                try {
+                    socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+                    out = new PrintWriter(socket.getOutputStream(), true);
+                    in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                    out.println(username);
+                    new Thread(new IncomingReader()).start();
+
+                    nameField.setEditable(false);
+                    connectButton.setEnabled(false);
+                    sendButton.setEnabled(true);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -100,13 +81,25 @@ public class ChatClient {
     private class SendButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String message = textField.getText().trim();
+            String message = textField.getText();
             if (!message.isEmpty()) {
                 out.println(message);
                 messageArea.append("You: " + message + "\n");
                 textField.setText("");
-            } else {
-                JOptionPane.showMessageDialog(frame, "Enter a message");
+            }
+        }
+    }
+
+    private class IncomingReader implements Runnable {
+        @Override
+        public void run() {
+            String message;
+            try {
+                while ((message = in.readLine()) != null) {
+                    messageArea.append(message + "\n");
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }

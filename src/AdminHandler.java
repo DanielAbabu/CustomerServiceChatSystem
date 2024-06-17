@@ -2,6 +2,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class AdminHandler {
     private JTextField userField;
@@ -45,6 +49,22 @@ public class AdminHandler {
         messageArea.append(message + "\n");
     }
 
+    private boolean authenticateUser(String username) {
+        try (Connection connection = DatabaseUtil.getConnection();) {
+            PreparedStatement statement = connection.prepareStatement("SELECT id FROM users WHERE username = ?");
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+
     private class SendButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -52,10 +72,15 @@ public class AdminHandler {
             String message = messageField.getText().trim();
 
             if (!username.isEmpty() && !message.isEmpty()) {
-                ChatServer.sendMessageToClient(username, message);
-                messageArea.append("You to " + username + ": " + message + "\n");
-                messageField.setText("");
-                userField.setText("");
+                if (authenticateUser(username)) {
+
+                    ChatServer.sendMessageToClient(username, message);
+                    messageArea.append("You to " + username + ": " + message + "\n");
+                    messageField.setText("");
+                    userField.setText("");
+                } else {
+                    JOptionPane.showMessageDialog(frame, "There is no user by this name.");
+                }
             } else {
                 JOptionPane.showMessageDialog(frame, "Enter both username and message");
             }
